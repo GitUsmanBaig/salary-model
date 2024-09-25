@@ -23,7 +23,7 @@ pipeline {
     }
     post {
         always {
-            echo 'Cleaning up...'
+            echo 'Cleaning'
             sh "docker rmi i211132usman/salary-predictor-jenkins:${env.BUILD_ID}"
         }
     }
