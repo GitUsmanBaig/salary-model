@@ -7,8 +7,8 @@ import pickle
 
 data = pd.read_csv('salary_data.csv')
 
-X = data['YearsExperience'].values.reshape(-1, 1)  # Independent variable (Years of Experience)
-y = data['Salary'].values  # Dependent variable (Salary)
+X = data['YearsExperience'].values.reshape(-1, 1) 
+y = data['Salary'].values 
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 

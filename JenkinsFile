@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+
+    environment {
+        // Define environment variables for Docker Hub credentials
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials') 
+        DOCKER_IMAGE_NAME = "salary-predictor-jenkins"
+        DOCKER_REGISTRY = "i211132usman"
+        APP_PORT = "8000"
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                // Clone the repository
+                git branch: 'main', url: 'https://github.com/GitUsmanBaig/salary-model'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build the Docker image using the Dockerfile
+                    sh 'docker build -t ${DOCKER_IMAGE_NAME} .'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Log in to Docker Hub
+                    sh 'echo $DOCKER_HUB_CREDENTIALS_PSW | docker login -u $DOCKER_HUB_CREDENTIALS_USR --password-stdin'
+                    // Tag and push the image to Docker Hub
+                    sh 'docker tag ${DOCKER_IMAGE_NAME}:latest ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:latest'
+                    sh 'docker push ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:latest'
+                }
+            }
+        }
+
+        stage('Deploy Container') {
+            steps {
+                script {
+                    // Stop and remove the existing container (if any)
+                    sh 'docker stop my_app_container || true && docker rm my_app_container || true'
+                    // Run the Docker container
+                    sh 'docker run -d -p ${APP_PORT}:${APP_PORT} --name my_app_container ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:latest'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Clean up workspace after pipeline execution
+            cleanWs()
+        }
+    }
+}
