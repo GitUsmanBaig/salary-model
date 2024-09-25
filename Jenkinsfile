@@ -12,7 +12,7 @@ pipeline {
                 }
             }
         }
-        stage('Push Image to Docker Hub') {
+        stage('Push Image to Docker-Hub') {
             steps {
                 script {
                     sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
