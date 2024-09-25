@@ -1,33 +1,30 @@
 pipeline {
     agent any
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('docker-hub-credentials')
+        DOCKER_USERNAME = credentials('docker-username') 
+        DOCKER_PASSWORD = credentials('docker-password') 
     }
     stages {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Building the Docker image and tagging it with the build ID
-                    docker.build("i211132usman/your_dockerhub_repo:${env.BUILD_ID}")
+                    sh "docker build -t i211132usman/salary-predictor-jenkins:${env.BUILD_ID} ."
                 }
             }
         }
         stage('Push Image to Docker Hub') {
             steps {
                 script {
-                    // Logging into Docker Hub and pushing the image
-                    docker.withRegistry('https://index.docker.io/v1/', 'DOCKERHUB_CREDENTIALS') {
-                        docker.image("i211132usman/your_dockerhub_repo:${env.BUILD_ID}").push()
-                    }
+                    sh 'echo $DOCKER_PASSWORD | docker login --username $DOCKER_USERNAME --password-stdin'
+                    sh "docker push i211132usman/salary-predictor-jenkins:${env.BUILD_ID}"
                 }
             }
         }
     }
     post {
         always {
-            // Cleaning up the Docker images to save space on the Jenkins server
             echo 'Cleaning up...'
-            sh "docker rmi i211132usman/your_dockerhub_repo:${env.BUILD_ID}"
+            sh "docker rmi i211132usman/salary-predictor-jenkins:${env.BUILD_ID}"
         }
     }
 }
